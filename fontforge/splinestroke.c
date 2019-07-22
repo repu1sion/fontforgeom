@@ -40,6 +40,24 @@
 
 #include <math.h>
 
+//lib2geom headers
+/*
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/sbasis-math.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/path-intersection.h>
+*/
+#include <2geom/bezier-curve.h>
+/*
+#include <2geom/transforms.h>
+#include <2geom/angle.h>
+*/
+
+
 #define PI      3.1415926535897932
 
 typedef struct strokepoint {
@@ -910,30 +928,90 @@ return;
     }
 }
 
-static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
+//if we need to convert our SplineSet to CubicBezier
+//SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2)
+
+//repu1sion: circlepen
+static SplineSet* FindStrokePointsCircleGeom(SplineSet *ss, StrokeContext *c) 
+{
+    Spline *s, *s_cub = NULL, *first = NULL;
+    SplineSet *rs = NULL, *ss_cub = NULL;
+    static int spline_num = 0;
+
+    printf("%s() called\n", __func__);
+
+    //convert our Splineset from quadratic to qubic Bezier
+    ss_cub = SplineSetsConvertOrder(ss, false);
+    if (ss_cub)
+    {
+        printf("%s(): converted SplineSet successfully\n", __func__);
+    }
+
+    for (s=ss->first->next, s_cub=ss_cub->first->next; s!=NULL && s!=first; s=s->to->next, s_cub=s_cub->to->next)
+    {
+    	printf("%s() new spline: %d\n", __func__, ++spline_num);
+	printf("FROM: me.x: %f, me.y: %f , prevcp.x: %f, prevcp.y: %f, nextcp.x: %f, nextcp.y: %f\n",  
+	    s->from->me.x, s->from->me.y, s->from->prevcp.x, s->from->prevcp.y, s->from->nextcp.x, s->from->nextcp.y);
+	printf("TO: me.x: %f, me.y: %f , prevcp.x: %f, prevcp.y: %f, nextcp.x: %f, nextcp.y: %f\n",  
+	    s->to->me.x, s->to->me.y, s->to->prevcp.x, s->to->prevcp.y, s->to->nextcp.x, s->to->nextcp.y);
+	//converted spline
+	printf("CUB FROM: me.x: %f, me.y: %f , prevcp.x: %f, prevcp.y: %f, nextcp.x: %f, nextcp.y: %f\n",  
+	    s_cub->from->me.x, s_cub->from->me.y, s_cub->from->prevcp.x, s_cub->from->prevcp.y, 
+		s_cub->from->nextcp.x, s_cub->from->nextcp.y);
+	printf("CUB TO: me.x: %f, me.y: %f , prevcp.x: %f, prevcp.y: %f, nextcp.x: %f, nextcp.y: %f\n",  
+	    s_cub->to->me.x, s_cub->to->me.y, s_cub->to->prevcp.x, s_cub->to->prevcp.y, 
+		s_cub->to->nextcp.x, s_cub->to->nextcp.y);
+	printf("------------------------------------------------------------------------\n");
+
+        if (!first)
+	   first = s;
+
+    }
+
+    return rs;
+}
+
+
+static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) 
+{
     Spline *s, *first;
     bigreal length;
     int i, len;
     bigreal diff, t;
     int open = ss->first->prev == NULL;
     int gothere = false;
+    static int spline_num = 0;
+
+    printf("%s() drawing\n", __func__);
 
     first = NULL;
-    for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
-	if ( first==NULL ) first = s;
+    //we get a spline from SplineSet
+    for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) 
+    {
+    	printf("%s() new spline: %d\n", __func__, ++spline_num);
+	printf("FROM: me.x: %f, me.y: %f , prevcp.x: %f, prevcp.y: %f, nextcp.x: %f, nextcp.y: %f\n",  
+	    s->from->me.x, s->from->me.y, s->from->prevcp.x, s->from->prevcp.y, s->from->nextcp.x, s->from->nextcp.y);
+	printf("TO: me.x: %f, me.y: %f , prevcp.x: %f, prevcp.y: %f, nextcp.x: %f, nextcp.y: %f\n",  
+	    s->to->me.x, s->to->me.y, s->to->prevcp.x, s->to->prevcp.y, s->to->nextcp.x, s->to->nextcp.y);
+
+	if ( first==NULL ) first = s;	//used only in loop
 	length = AdjustedSplineLength(s);
-	if ( length==0 )		/* This can happen when we have a spline with the same first and last point and no control point */
-    continue;		/* We can safely ignore it because it is of zero length */
+	if ( length==0 )		/*  have a spline with the same first and last point and no control point */
+ 	   continue;		/* We can safely ignore it because it is of zero length */
 	    /* We need to ignore it because it gives us 0/0 in places */
 
-	len = ceil( length/c->resolution );
+	len = ceil(length/c->resolution);	//len is mostly same as length, but int
+    	printf("%s() length: %f, len: %d\n", __func__, length, len);
 	if ( len<2 ) len=2;
 	/* There will be len+1 sample points taken. Two of those points will be*/
 	/*  the end points, and there will be at least one internal point */
 	diff = 1.0/len;
-	for ( i=0, t=0; i<=len; ++i, t+= diff ) {
+	for ( i=0, t=0; i<=len; ++i, t+= diff ) 
+	{
+    	    printf("%s() iter: %d, radius: %f\n", __func__, i, c->radius);
 	    StrokePoint *p;
-	    if ( c->cur >= c->max ) {
+	    if ( c->cur >= c->max ) 
+	    {
 		int extras = len+200;
 		c->all = realloc(c->all,(c->max+extras)*sizeof(StrokePoint));
 		memset(c->all+c->max,0,extras*sizeof(StrokePoint));
@@ -941,29 +1019,43 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
 	    }
 	    p = &c->all[c->cur++];
 	    if ( i==len ) t = 1.0;	/* In case there were rounding errors */
-	    FindSlope(c,s,t,diff);
-	    p->left.x = p->me.x - c->radius*p->slope.y;
+	    //slope - наклон
+	    FindSlope(c,s,t,diff);				//<-- repu1sion: big function!
+	    p->left.x = p->me.x - c->radius*p->slope.y;		//assign coord values to StrokePoints
 	    p->left.y = p->me.y + c->radius*p->slope.x;
 	    p->right.x = p->me.x + c->radius*p->slope.y;
 	    p->right.y = p->me.y - c->radius*p->slope.x;
-	    if ( i==0 ) {
+	    if ( i==0 ) //first iter in loop for every new spline
+	    {
+    	    	printf("%s(): i is 0.  %d\n", __func__, i);
 		/* OK, the join or cap should happen before this point */
 		/*  But we will use the values we calculate here. So we'll */
 		/*  move the stuff we just calculated until after the joint */
+
+		//this part of code seems to connect first and last point
 		if ( open && !gothere )
-		    LineCap(c,0);
+		    LineCap(c,0);				//<-- also big function
 		else if ( gothere )		/* Do nothing if it's the join at the start */
-		    LineJoin(c,false);
+		    LineJoin(c,false);				//<-- big func
 		gothere = true;
 	    }
 	}
 	if ( s->to->next==NULL )
+	{
+    	    printf("%s(): linecap when s->to->next is NULL\n", __func__);
 	    LineCap(c,1);
+	}
     }
+    //end of Splines loop
+
     if ( !open && c->cur>0 )
 	LineJoin(c,true);
+//repu1son: if commented:
+//Internal Error:
+//Some fragments did not join in D
     HideStrokePointsCircle(c);
 
+#if 0
     /* just in case... add an on curve point every time the sample's slopes */
     /*  move through 90 degrees. (We only do this for circles because for  */
     /*  squares and polygons this will happen automatically whenever we change */
@@ -1009,6 +1101,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
 	i=j;
     }
     }
+#endif
 		
 }
 
@@ -3692,7 +3785,8 @@ return(NULL);
 	c->open = base->first->prev==NULL;
 	switch ( c->pentype ) {
 	  case pt_circle:
-	    FindStrokePointsCircle(base, c);
+	    FindStrokePointsCircleGeom(base,c);
+	    //FindStrokePointsCircle(base, c);		//<--this func actually does the job
 	  break;
 	  case pt_square:
 	    FindStrokePointsSquare(base, c);
@@ -3741,6 +3835,8 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     BasePoint center;
     real trans[6];
 
+    printf("%s() func called\n", __func__);
+
     if ( si->stroke_type==si_centerline )
 	IError("centerline not handled");
 
@@ -3748,7 +3844,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     c.resolution = si->resolution;
     if ( si->resolution==0 )
 	c.resolution = 1;
-    c.pentype = si->stroke_type==si_std ? pt_circle :
+    c.pentype = si->stroke_type==si_std ? pt_circle :				//<-- here we select pentype, pt_circle means circle
 		si->stroke_type==si_caligraphic ? pt_square :
 		   pt_poly;
     c.join = si->join;
@@ -3760,7 +3856,12 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
     c.remove_outer = si->removeexternal;
     c.leave_users_center = si->leave_users_center;
     c.scaled_or_rotated = si->factor!=NULL;
-    if ( c.pentype==pt_circle || c.pentype==pt_square ) {
+
+    printf("%s() pentype: %d [circle - 0, square - 1, poly - 2]\n", __func__, c.pentype);
+
+    if ( c.pentype==pt_circle || c.pentype==pt_square ) 
+    {
+    	printf("%s() circle or square\n", __func__);
 	if ( si->minorradius==0 )
 	    si->minorradius = si->radius;
 	if ( si->minorradius!=si->radius ||
@@ -3781,12 +3882,15 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	}
 	if ( si->resolution==0 && c.resolution>c.radius/3 )
 	    c.resolution = c.radius/3;
-    if (c.resolution == 0) {
-        ff_post_notice(_("Invalid stroke parameters"), _("Stroke resolution is zero"));
-        return SplinePointListCopy(ss);
-    }
+        if (c.resolution == 0) {
+            ff_post_notice(_("Invalid stroke parameters"), _("Stroke resolution is zero"));
+            return SplinePointListCopy(ss);
+        }
 	ret = SplineSets_Stroke(ss,&c,order2);
-    } else {
+    } 
+    else 
+    {
+    	printf("%s() poly or smth else\n", __func__);
 	first = last = NULL;
 	max = 0;
 	memset(&center,0,sizeof(center));
@@ -3794,7 +3898,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 	    for ( sp=active->first, n=0; ; ) {
 		++n;
 		if ( sp->next==NULL )
-return( NULL );				/* That's an error, must be closed */
+			return( NULL );				/* That's an error, must be closed */
 		sp=sp->next->to;
 		if ( sp==active->first )
 	    break;

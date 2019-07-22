@@ -1065,7 +1065,7 @@ typedef uint8 HintMask[HntMax/8];
 
 enum pointtype { pt_curve, pt_corner, pt_tangent, pt_hvcurve };
 typedef struct splinepoint {
-    BasePoint me;
+    BasePoint me;		//x and y coords are here
     BasePoint nextcp;		/* control point */
     BasePoint prevcp;		/* control point */
     unsigned int nonextcp:1;

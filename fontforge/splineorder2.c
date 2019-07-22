@@ -1042,7 +1042,8 @@ SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2) {
 	new = SplineSetsTTFApprox(ss);
     else
 	new = SplineSetsPSApprox(ss);
-    SplinePointListsFree(ss);
+    //repu1sion hack
+    //SplinePointListsFree(ss);
 return( new );
 }
 
