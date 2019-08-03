@@ -1341,44 +1341,44 @@ int ValidatePrivate(SplineFont *sf) {
     bigreal bluescale = .039625;
     int magicpointsize;
 
-    if ( sf->private==NULL )
+    if ( sf->private_==NULL )
 return( pds_missingblue );
 
-    if ( (bf = PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL ) {
+    if ( (bf = PSDictHasEntry(sf->private_,"BlueFuzz"))!=NULL ) {
 	fuzz = strtol(bf,&end,10);
 	if ( *end!='\0' || fuzz<0 )
 	    errs |= pds_badbluefuzz;
     }
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
+    if ( (test=PSDictHasEntry(sf->private_,"BlueScale"))!=NULL ) {
 	bluescale = g_ascii_strtod(test,&end);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }
     magicpointsize = rint( bluescale*240 + 0.49 );
 
-    if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
+    if ( (blues = PSDictHasEntry(sf->private_,"BlueValues"))==NULL )
 	errs |= pds_missingblue;
     else
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz,magicpointsize);
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private_,"OtherBlues"),fuzz,magicpointsize);
 
-    if ( (blues = PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"FamilyOtherBlues"),
+    if ( (blues = PSDictHasEntry(sf->private_,"FamilyBlues"))!=NULL )
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private_,"FamilyOtherBlues"),
 		fuzz,magicpointsize)<<pds_shift;
 
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueShift"))!=NULL ) {
+    if ( (test=PSDictHasEntry(sf->private_,"BlueShift"))!=NULL ) {
 	int val = strtol(test,&end,10);
 	if ( *end!='\0' || end==test || val<0 )
 	    errs |= pds_badblueshift;
     }
 
-    if ( !CheckStdW(sf->private,"StdHW"))
+    if ( !CheckStdW(sf->private_,"StdHW"))
 	errs |= pds_badstdhw;
-    if ( !CheckStdW(sf->private,"StdVW"))
+    if ( !CheckStdW(sf->private_,"StdVW"))
 	errs |= pds_badstdvw;
 
-    switch ( CheckStemSnap(sf->private,"StemSnapH", "StdHW")) {
+    switch ( CheckStemSnap(sf->private_,"StemSnapH", "StdHW")) {
       case false:
 	errs |= pds_badstemsnaph;
       break;
@@ -1386,7 +1386,7 @@ return( pds_missingblue );
 	errs |= pds_stemsnapnostdh;
       break;
     }
-    switch ( CheckStemSnap(sf->private,"StemSnapV", "StdVW")) {
+    switch ( CheckStemSnap(sf->private_,"StemSnapV", "StdVW")) {
       case false:
 	errs |= pds_badstemsnapv;
       break;

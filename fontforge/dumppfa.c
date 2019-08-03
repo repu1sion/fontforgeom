@@ -410,7 +410,7 @@ static void dumpsubrs(void (*dumpchar)(int ch,void *data), void *data,
 
     if ( subrs==NULL )
 return;
-    if ( (pt=PSDictHasEntry(sf->private,"lenIV"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_,"lenIV"))!=NULL )
 	leniv = strtol(pt,NULL,10);
     dumpf(dumpchar,data,"/Subrs %d array\n",subrs->next);
     for ( i=0; i<subrs->next; ++i ) {
@@ -428,7 +428,7 @@ static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
     int i;
     char *pt;
 
-    if ( (pt=PSDictHasEntry(sf->private,"lenIV"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_,"lenIV"))!=NULL )
 	leniv = strtol(pt,NULL,10);
     dumpf(dumpchar,data,"2 index /CharStrings %d dict dup begin\n",chars->cnt);
     for ( i=0; i<chars->next; ++i ) {
@@ -1367,7 +1367,7 @@ static void dumpmmprivatearr(void (*dumpchar)(int ch,void *data), void *data,
 static void dumpmmprivate(void (*dumpchar)(int ch,void *data), void *data,MMSet *mm) {
     char *privates[16];
     int j,k, missing, allsame;
-    struct psdict *private = mm->instances[0]->private;
+    struct psdict *private = mm->instances[0]->private_;
 
     if ( private==NULL )
 return;
@@ -1377,7 +1377,7 @@ return;
 	privates[0] = private->values[k];
 	missing = false; allsame = true;
 	for ( j=1; j<mm->instance_count; ++j ) {
-	    privates[j] = PSDictHasEntry(mm->instances[j]->private,private->keys[k]);
+	    privates[j] = PSDictHasEntry(mm->instances[j]->private_,private->keys[k]);
 	    if ( privates[j]==NULL ) {
 		missing = true;
 	break;
@@ -1484,13 +1484,13 @@ return( false );
 	iscjk = incid->iscjk;
     }
 
-    hasbold = PSDictHasEntry(sf->private,"ForceBold")!=NULL;
-    hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
-    hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
-    hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
-    hasshift = PSDictHasEntry(sf->private,"BlueShift")!=NULL;
-    /*hasxuid = PSDictHasEntry(sf->private,"XUID")!=NULL;*/
-    haslg = PSDictHasEntry(sf->private,"LanguageGroup")!=NULL;
+    hasbold = PSDictHasEntry(sf->private_,"ForceBold")!=NULL;
+    hasblue = PSDictHasEntry(sf->private_,"BlueValues")!=NULL;
+    hash = PSDictHasEntry(sf->private_,"StdHW")!=NULL;
+    hasv = PSDictHasEntry(sf->private_,"StdVW")!=NULL;
+    hasshift = PSDictHasEntry(sf->private_,"BlueShift")!=NULL;
+    /*hasxuid = PSDictHasEntry(sf->private_,"XUID")!=NULL;*/
+    haslg = PSDictHasEntry(sf->private_,"LanguageGroup")!=NULL;
     if ( sf->weight!=NULL &&
 	    (strstrmatch(sf->weight,"Bold")!=NULL ||
 	     strstrmatch(sf->weight,"Heavy")!=NULL ||
@@ -1519,7 +1519,7 @@ return( false );
 	if ( !ff_progress_next_stage())
 return( false );
     }
-    bluescale = BlueScaleFigure(sf->private,bluevalues,otherblues);
+    bluescale = BlueScaleFigure(sf->private_,bluevalues,otherblues);
 
     if ( !hash || !hasv )
     stdhw[0] = stdvw[0] = 0;
@@ -1577,7 +1577,7 @@ return( false );
 	if ( stdvw[0]!=0 ) ++cnt;
 	if ( stemsnapv[0]!=0 ) ++cnt;
     }
-    cnt += sf->private!=NULL?sf->private->next:0;
+    cnt += sf->private_!=NULL?sf->private_->next:0;
     if ( incid==NULL ) {
 	++cnt;			/* Subrs entry */
 	++cnt;			/* Other Subrs */
@@ -1625,16 +1625,16 @@ return( false );
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
     if ( sf->tempuniqueid!=0 && sf->tempuniqueid!=-1 && sf->use_uniqueid )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->tempuniqueid );
-    if ( sf->private!=NULL ) {
-	for ( i=0; i<sf->private->next; ++i ) {
-	    dumpf(dumpchar,data,"/%s ", sf->private->keys[i]);
-	    dumpstr(dumpchar,data,sf->private->values[i]);
-	    if ( strcmp(sf->private->keys[i],"BlueValues")==0 ||
-		    strcmp(sf->private->keys[i],"OtherBlues")==0 ||
-		    strcmp(sf->private->keys[i],"StdHW")==0 ||
-		    strcmp(sf->private->keys[i],"StdVW")==0 ||
-		    strcmp(sf->private->keys[i],"StemSnapH")==0 ||
-		    strcmp(sf->private->keys[i],"StemSnapV")==0 )
+    if ( sf->private_!=NULL ) {
+	for ( i=0; i<sf->private_->next; ++i ) {
+	    dumpf(dumpchar,data,"/%s ", sf->private_->keys[i]);
+	    dumpstr(dumpchar,data,sf->private_->values[i]);
+	    if ( strcmp(sf->private_->keys[i],"BlueValues")==0 ||
+		    strcmp(sf->private_->keys[i],"OtherBlues")==0 ||
+		    strcmp(sf->private_->keys[i],"StdHW")==0 ||
+		    strcmp(sf->private_->keys[i],"StdVW")==0 ||
+		    strcmp(sf->private_->keys[i],"StemSnapH")==0 ||
+		    strcmp(sf->private_->keys[i],"StemSnapV")==0 )
 		dumpf(dumpchar,data," %s\n", ND);
 	    else
 		dumpstr(dumpchar,data," def\n");
@@ -1951,7 +1951,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	}
 	dumpstr(dumpchar,data,"} def\n" );
 
-	dumpf(dumpchar,data,"  /Private %d dict def\n", sf->private->next+10 );
+	dumpf(dumpchar,data,"  /Private %d dict def\n", sf->private_->next+10 );
 	dumpstr(dumpchar,data," end def		%End of Blend dict\n" );
 
 	for ( j=0; makeblendedfont[j]!=NULL; ++j ) {
@@ -2428,7 +2428,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
 return( NULL );
 	}
 	fd->iscjk = SFIsCJK(sf,map);
-	pt = PSDictHasEntry(sf->private,"lenIV");
+	pt = PSDictHasEntry(sf->private_,"lenIV");
 	if ( pt!=NULL )
 	    fd->leniv = strtol(pt,NULL,10);
 	else

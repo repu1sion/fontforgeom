@@ -3737,8 +3737,8 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
     sf->strokedfont = subdict->painttype==2;
 
     if ( subdict->private_size>0 ) {
-	sf->private = calloc(1,sizeof(struct psdict));
-	cffprivatefillup(sf->private,subdict);
+	sf->private_ = calloc(1,sizeof(struct psdict));
+	cffprivatefillup(sf->private_,subdict);
     }
 return( sf );
 }
@@ -6142,7 +6142,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->vhea_start!=0 && info->vmetrics_start!=0 )
 	sf->hasvmetrics = true;
     sf->descent = info->descent;
-    sf->private = info->private;
+    sf->private_ = info->private;
     sf->xuid = info->xuid;
     sf->uniqueid = info->uniqueid;
     sf->pfminfo = info->pfminfo;

@@ -100,9 +100,9 @@ return( NULL );
 		    ++cnt;
 		}
 	    }
-	    (&new->rules[i].u.class.ncnt)[j] = cnt;
+	    (&new->rules[i].u.class_.ncnt)[j] = cnt;
 	    if ( cnt!=0 ) {
-		(&new->rules[i].u.class.nclasses)[j] = malloc(cnt*sizeof(uint16));
+		(&new->rules[i].u.class_.nclasses)[j] = malloc(cnt*sizeof(uint16));
 		cnt = 0;
 		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; pt=end ) {
 		    while ( *pt==' ' ) ++pt;
@@ -119,7 +119,7 @@ return( NULL );
 			names[nextclass++] = copy(pt);
 		    }
 		    *end = ch;
-		    (&new->rules[i].u.class.nclasses)[j][cnt++] = k;
+		    (&new->rules[i].u.class_.nclasses)[j][cnt++] = k;
 		}
 	    }
 	}
@@ -180,10 +180,10 @@ return( snum );
 static OTLookup *RuleHasSubsHere(struct fpst_rule *rule,int depth) {
     int i,j;
 
-    if ( depth<rule->u.class.bcnt )
+    if ( depth<rule->u.class_.bcnt )
 return( NULL );
-    depth -= rule->u.class.bcnt;
-    if ( depth>=rule->u.class.ncnt )
+    depth -= rule->u.class_.bcnt;
+    if ( depth>=rule->u.class_.ncnt )
 return( NULL );
     for ( i=0; i<rule->lookup_cnt; ++i ) {
 	if ( rule->lookups[i].seq==depth ) {
@@ -276,18 +276,18 @@ static struct contexttree *_FPST2Tree(FPST *fpst,struct contexttree *parent,int 
     } else {
 	me->depth = parent->depth+1;
 	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
-	    if ( parent->rules[i].rule->u.class.allclasses[me->depth] == class )
+	    if ( parent->rules[i].rule->u.class_.allclasses[me->depth] == class )
 		++rcnt;
 	me->rule_cnt = rcnt;
 	me->rules = calloc(me->rule_cnt,sizeof(struct ct_subs));
 	for ( i=rcnt=0; i<parent->rule_cnt; ++i )
-	    if ( parent->rules[i].rule->u.class.allclasses[me->depth] == class )
+	    if ( parent->rules[i].rule->u.class_.allclasses[me->depth] == class )
 		me->rules[rcnt++].rule = parent->rules[i].rule;
 	me->parent = parent;
     }
     classes = malloc(me->rule_cnt*sizeof(uint16));
     for ( i=ccnt=0; i<me->rule_cnt; ++i ) {
-	thisclass = me->rules[i].thisclassnum = me->rules[i].rule->u.class.allclasses[me->depth+1];
+	thisclass = me->rules[i].thisclassnum = me->rules[i].rule->u.class_.allclasses[me->depth+1];
 	if ( thisclass==0xffff ) {
 	    if ( me->ends_here==NULL )
 		me->ends_here = me->rules[i].rule;
@@ -317,19 +317,19 @@ static void FPSTBuildAllClasses(FPST *fpst) {
     int i, off,j;
 
     for ( i=0; i<fpst->rule_cnt; ++i ) {
-	fpst->rules[i].u.class.allclasses = malloc((fpst->rules[i].u.class.bcnt+
-						    fpst->rules[i].u.class.ncnt+
-			                            fpst->rules[i].u.class.fcnt+
+	fpst->rules[i].u.class_.allclasses = malloc((fpst->rules[i].u.class_.bcnt+
+						    fpst->rules[i].u.class_.ncnt+
+			                            fpst->rules[i].u.class_.fcnt+
 			                            1)*sizeof(uint16));
-	off = fpst->rules[i].u.class.bcnt;
+	off = fpst->rules[i].u.class_.bcnt;
 	for ( j=0; j<off; ++j )
-	    fpst->rules[i].u.class.allclasses[j] = fpst->rules[i].u.class.bclasses[off-1-j];
-	for ( j=0; j<fpst->rules[i].u.class.ncnt; ++j )
-	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.nclasses[j];
+	    fpst->rules[i].u.class_.allclasses[j] = fpst->rules[i].u.class_.bclasses[off-1-j];
+	for ( j=0; j<fpst->rules[i].u.class_.ncnt; ++j )
+	    fpst->rules[i].u.class_.allclasses[off+j] = fpst->rules[i].u.class_.nclasses[j];
 	off += j;
-	for ( j=0; j<fpst->rules[i].u.class.fcnt; ++j )
-	    fpst->rules[i].u.class.allclasses[off+j] = fpst->rules[i].u.class.fclasses[j];
-	fpst->rules[i].u.class.allclasses[off+j] = 0xffff;	/* End of rule marker */
+	for ( j=0; j<fpst->rules[i].u.class_.fcnt; ++j )
+	    fpst->rules[i].u.class_.allclasses[off+j] = fpst->rules[i].u.class_.fclasses[j];
+	fpst->rules[i].u.class_.allclasses[off+j] = 0xffff;	/* End of rule marker */
     }
 }
 
@@ -337,8 +337,8 @@ static void FPSTFreeAllClasses(FPST *fpst) {
     int i;
 
     for ( i=0; i<fpst->rule_cnt; ++i ) {
-	free( fpst->rules[i].u.class.allclasses );
-	fpst->rules[i].u.class.allclasses = NULL;
+	free( fpst->rules[i].u.class_.allclasses );
+	fpst->rules[i].u.class_.allclasses = NULL;
     }
 }
 
@@ -912,12 +912,12 @@ return;
 
 static struct asm_state *AnyActiveSubstrings(struct contexttree *tree,
 	struct contexttree *cur,int class, struct asm_state *trans, int classcnt) {
-    struct fpc *any = &cur->rules[0].rule->u.class;
+    struct fpc *any = &cur->rules[0].rule->u.class_;
     int i,rc,j, b;
 
     for ( i=1; i<=cur->depth; ++i ) {
 	for ( rc=0; rc<tree->rule_cnt; ++rc ) {
-	    struct fpc *r = &tree->rules[rc].rule->u.class;
+	    struct fpc *r = &tree->rules[rc].rule->u.class_;
 	    int ok = true;
 	    for ( j=0; j<=cur->depth-i; ++j ) {
 		if ( any->allclasses[j+i]!=r->allclasses[j] ) {

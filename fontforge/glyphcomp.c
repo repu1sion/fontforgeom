@@ -1735,25 +1735,25 @@ return( false );
 		    strcmp(fpst1->rules[i].u.glyph.fore,fpst2->rules[i].u.glyph.fore)!=0 )
 return( false );
 	} else if ( fpst1->format == pst_class ) {
-	    if ( fpst1->rules[i].u.class.ncnt!=fpst2->rules[i].u.class.ncnt ||
-		    fpst1->rules[i].u.class.bcnt!=fpst2->rules[i].u.class.bcnt ||
-		    fpst1->rules[i].u.class.fcnt!=fpst2->rules[i].u.class.fcnt )
+	    if ( fpst1->rules[i].u.class_.ncnt!=fpst2->rules[i].u.class_.ncnt ||
+		    fpst1->rules[i].u.class_.bcnt!=fpst2->rules[i].u.class_.bcnt ||
+		    fpst1->rules[i].u.class_.fcnt!=fpst2->rules[i].u.class_.fcnt )
 return( false );
-	    if ( memcmp(fpst1->rules[i].u.class.nclasses,fpst2->rules[i].u.class.nclasses,
-		    fpst1->rules[i].u.class.ncnt*sizeof(uint16))!=0 )
+	    if ( memcmp(fpst1->rules[i].u.class_.nclasses,fpst2->rules[i].u.class_.nclasses,
+		    fpst1->rules[i].u.class_.ncnt*sizeof(uint16))!=0 )
 return( false );
-	    if ( fpst1->rules[i].u.class.bcnt!=0 &&
-		    memcmp(fpst1->rules[i].u.class.bclasses,fpst2->rules[i].u.class.bclasses,
-			fpst1->rules[i].u.class.bcnt*sizeof(uint16))!=0 )
+	    if ( fpst1->rules[i].u.class_.bcnt!=0 &&
+		    memcmp(fpst1->rules[i].u.class_.bclasses,fpst2->rules[i].u.class_.bclasses,
+			fpst1->rules[i].u.class_.bcnt*sizeof(uint16))!=0 )
 return( false );
-	    if ( fpst1->rules[i].u.class.fcnt!=0 &&
-		    memcmp(fpst1->rules[i].u.class.fclasses,fpst2->rules[i].u.class.fclasses,
-			fpst1->rules[i].u.class.fcnt*sizeof(uint16))!=0 )
+	    if ( fpst1->rules[i].u.class_.fcnt!=0 &&
+		    memcmp(fpst1->rules[i].u.class_.fclasses,fpst2->rules[i].u.class_.fclasses,
+			fpst1->rules[i].u.class_.fcnt*sizeof(uint16))!=0 )
 return( false );
 	} else if ( fpst1->format == pst_coverage || fpst1->format == pst_reversecoverage ) {
-	    if ( fpst1->rules[i].u.coverage.ncnt!=fpst2->rules[i].u.class.ncnt ||
-		    fpst1->rules[i].u.coverage.bcnt!=fpst2->rules[i].u.class.bcnt ||
-		    fpst1->rules[i].u.coverage.fcnt!=fpst2->rules[i].u.class.fcnt )
+	    if ( fpst1->rules[i].u.coverage.ncnt!=fpst2->rules[i].u.class_.ncnt ||
+		    fpst1->rules[i].u.coverage.bcnt!=fpst2->rules[i].u.class_.bcnt ||
+		    fpst1->rules[i].u.coverage.fcnt!=fpst2->rules[i].u.class_.fcnt )
 return( false );
 	    for ( j=0; j<fpst1->rules[i].u.coverage.ncnt; ++j )
 		if ( classcmp(fpst1->rules[i].u.coverage.ncovers[j],fpst2->rules[i].u.coverage.ncovers[j])!=0 )

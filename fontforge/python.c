@@ -10733,11 +10733,11 @@ static void privateiter_dealloc(privateiterobject *di) {
 static PyObject *privateiter_iternextkey(privateiterobject *di) {
     PyFF_Private *d = di->private;
 
-    if (d == NULL || d->sf->private==NULL )
+    if (d == NULL || d->sf->private_==NULL )
 return NULL;
 
-    if ( di->pos<d->sf->private->next )
-return( Py_BuildValue("s",d->sf->private->keys[di->pos++]) );
+    if ( di->pos<d->sf->private_->next )
+return( Py_BuildValue("s",d->sf->private_->keys[di->pos++]) );
 
 return NULL;
 }
@@ -10811,7 +10811,7 @@ return( STRING_FROM_FORMAT( "<Private Dictionary for %s>", self->sf->fontname ))
 /* ************************************************************************** */
 
 static Py_ssize_t PyFF_PrivateLength( PyObject *self ) {
-    struct psdict *private = ((PyFF_Private *) self)->sf->private;
+    struct psdict *private = ((PyFF_Private *) self)->sf->private_;
     if ( private==NULL )
 return( 0 );
     else
@@ -10820,7 +10820,7 @@ return( private->next );
 
 static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
     SplineFont *sf = ((PyFF_Private *) self)->sf;
-    struct psdict *private = sf->private;
+    struct psdict *private = sf->private_;
     char *value=NULL;
     char *pt, *end;
     double temp;
@@ -10874,7 +10874,7 @@ return( Py_BuildValue("s",value));
 
 static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
     SplineFont *sf = ((PyFF_Private *) self)->sf;
-    struct psdict *private = sf->private;
+    struct psdict *private = sf->private_;
     char *string, *freeme=NULL;
     char buffer[40];
 
@@ -10909,7 +10909,7 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
     if ( STRING_CHECK(index)) {
 	char *name;
 	if ( private==NULL )
-	    sf->private = private = calloc(1,sizeof(struct psdict));
+	    sf->private_ = private = calloc(1,sizeof(struct psdict));
 	PYGETSTR(index, name, -1);
 	PSDictChangeEntry(private,name,string);
 	ENDPYGETSTR();
@@ -10936,10 +10936,10 @@ static PyObject *PyFFPrivate_Guess(PyFF_Private *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s", &name) )
 return( NULL );
-    if ( sf->private==NULL )
-	sf->private = calloc(1,sizeof(struct psdict));
+    if ( sf->private_==NULL )
+	sf->private_ = calloc(1,sizeof(struct psdict));
 
-    SFPrivateGuess(sf,self->fv->active_layer,sf->private,name,true);
+    SFPrivateGuess(sf,self->fv->active_layer,sf->private_,name,true);
 Py_RETURN( self );
 }
 
@@ -12326,7 +12326,7 @@ ff_gs_os2bit(typodescent_add)
 ff_gs_bit(changed)
 ff_gs_ro_bit(multilayer)
 ff_gs_bit(strokedfont)
-ff_gs_ro_bit(new)
+ff_gs_ro_bit(new_)
 
 ff_gs_bit(use_typo_metrics)
 ff_gs_bit(weight_width_slope_only)
@@ -13941,7 +13941,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
      (getter)PyFF_Font_get_changed, (setter)PyFF_Font_set_changed,
      (char *)"Flag indicating whether the font has been changed since it was loaded (read only)", NULL},
     {(char *)"isnew",
-     (getter)PyFF_Font_get_new, NULL,
+     (getter)PyFF_Font_get_new_, NULL,
      (char *)"Flag indicating whether the font is new (read only)", NULL},
     {(char *)"hasvmetrics",
      (getter)PyFF_Font_get_hasvmetrics, (setter)PyFF_Font_set_hasvmetrics,
@@ -14346,8 +14346,8 @@ return( NULL );
     sf->display_antialias = fv->sf->display_antialias;
     sf->display_bbsized = fv->sf->display_bbsized;
     sf->display_size = fv->sf->display_size;
-    sf->private = calloc(1,sizeof(struct psdict));
-    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    sf->private_ = calloc(1,sizeof(struct psdict));
+    PSDictChangeEntry(sf->private_,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     FVInsertInCID(fv,sf);
 Py_RETURN( self );
 }
@@ -16138,7 +16138,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 	sf->save_to_dir = s2d;
 	free(sf->origname);
 	sf->origname = copy(locfilename);
-	sf->new = false;
+	sf->new_ = false;
 	if ( sf->mm!=NULL ) {
 	    int i;
 	    for ( i=0; i<sf->mm->instance_count; ++i ) {
@@ -16146,7 +16146,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 		sf->mm->instances[i]->filename = copy(locfilename);
 		free(sf->mm->instances[i]->origname);
 		sf->mm->instances[i]->origname = copy(locfilename);
-		sf->mm->instances[i]->new = false;
+		sf->mm->instances[i]->new_ = false;
 	    }
 	}
 	SplineFontSetUnChanged(sf);
@@ -19526,7 +19526,7 @@ return;
     }
     Py_XDECREF(obj);
 
-    if ( sf->new )
+    if ( sf->new_ )
 	PyFF_CallDictFunc(hook_dict,"newFontHook","f", fv );
     else
 	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );

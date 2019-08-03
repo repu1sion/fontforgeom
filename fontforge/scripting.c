@@ -6146,8 +6146,8 @@ static void bReplaceCharCounterMasks(Context *c) {
 }
 
 static void bClearPrivateEntry(Context *c) {
-    if ( c->curfv->sf->private!=NULL )
-	PSDictRemoveEntry( c->curfv->sf->private,c->a.vals[1].u.sval);
+    if ( c->curfv->sf->private_!=NULL )
+	PSDictRemoveEntry( c->curfv->sf->private_,c->a.vals[1].u.sval);
 }
 
 static void bPrivateGuess(Context *c) {
@@ -6155,10 +6155,10 @@ static void bPrivateGuess(Context *c) {
     char *key;
 
     key = forceASCIIcopy(c,c->a.vals[1].u.sval);
-    if ( sf->private==NULL ) {
-	sf->private = calloc(1,sizeof(struct psdict));
+    if ( sf->private_==NULL ) {
+	sf->private_ = calloc(1,sizeof(struct psdict));
     }
-    SFPrivateGuess(sf,c->curfv->active_layer,sf->private,key,true);
+    SFPrivateGuess(sf,c->curfv->active_layer,sf->private_,key,true);
     free(key);
 }
 
@@ -6168,13 +6168,13 @@ static void bChangePrivateEntry(Context *c) {
 
     key = forceASCIIcopy(c,c->a.vals[1].u.sval);
     val = forceASCIIcopy(c,c->a.vals[2].u.sval);
-    if ( sf->private==NULL ) {
-	sf->private = calloc(1,sizeof(struct psdict));
-	sf->private->cnt = 10;
-	sf->private->keys = calloc(10,sizeof(char *));
-	sf->private->values = calloc(10,sizeof(char *));
+    if ( sf->private_==NULL ) {
+	sf->private_ = calloc(1,sizeof(struct psdict));
+	sf->private_->cnt = 10;
+	sf->private_->keys = calloc(10,sizeof(char *));
+	sf->private_->values = calloc(10,sizeof(char *));
     }
-    PSDictChangeEntry(sf->private,key,val);
+    PSDictChangeEntry(sf->private_,key,val);
     free(key); free(val);
 }
 
@@ -6183,7 +6183,7 @@ static void bHasPrivateEntry(Context *c) {
 
     c->return_val.type = v_int;
     c->return_val.u.ival = 0;
-    if ( PSDictHasEntry(sf->private,c->a.vals[1].u.sval)!=NULL )	/* this works if sf->private==NULL */
+    if ( PSDictHasEntry(sf->private_,c->a.vals[1].u.sval)!=NULL )	/* this works if sf->private_==NULL */
 	c->return_val.u.ival = 1;
 }
 
@@ -6191,11 +6191,11 @@ static void bGetPrivateEntry(Context *c) {
     int i;
 
     c->return_val.type = v_str;
-    if ( c->curfv->sf->private==NULL ||
-	    (i = PSDictFindEntry(c->curfv->sf->private,c->a.vals[1].u.sval))==-1 )
+    if ( c->curfv->sf->private_==NULL ||
+	    (i = PSDictFindEntry(c->curfv->sf->private_,c->a.vals[1].u.sval))==-1 )
 	c->return_val.u.sval = copy("");
     else
-	c->return_val.u.sval = copy(c->curfv->sf->private->values[i]);
+	c->return_val.u.sval = copy(c->curfv->sf->private_->values[i]);
 }
 
 static void bSetWidth(Context *c) {
