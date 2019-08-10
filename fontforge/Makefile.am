@@ -118,10 +118,11 @@ LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 
 AM_CFLAGS = $(WARN_CFLAGS)
 
-AM_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"		\
+AM_CPPFLAGS = "-std=c++11" "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"\
 	"-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"			\
+	"-I/usr/local/include/2geom-1.0.0/"				\
 	"-DSHAREDIR=\"${MY_SHAREDIR}\"" "-DDOCDIR=\"${MY_DOCDIR}\""	\
-	$(MY_CFLAGS)
+	 $(MY_CFLAGS)
 
 #--------------------------------------------------------------------------
 
@@ -148,12 +149,19 @@ libfontforge_la_SOURCES = activeinui.c asmfpst.c autohint.c autosave.c	\
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 libfontforge_la_LIBADD =
 
-if FONTFORGE_CAN_USE_WOFF2
+#if FONTFORGE_CAN_USE_WOFF2
+#CLEANFILES = libfontforge_cxx.la
+#noinst_LTLIBRARIES = libfontforge_cxx.la
+#libfontforge_cxx_la_SOURCES = woff2.cc
+#libfontforge_la_LIBADD += libfontforge_cxx.la -lstdc++
+#endif
+
+#----pulse hack to build geom.cc-------------------------------------------
 CLEANFILES = libfontforge_cxx.la
 noinst_LTLIBRARIES = libfontforge_cxx.la
-libfontforge_cxx_la_SOURCES = woff2.cc
+libfontforge_cxx_la_SOURCES = geom.cc
 libfontforge_la_LIBADD += libfontforge_cxx.la -lstdc++
-endif
+#--------------------------------------------------------------------------
 
 libfontforge_la_CPPFLAGS = $(AM_CPPFLAGS)
 libfontforge_la_LIBADD += splinerefigure.lo $(LIBADD)
