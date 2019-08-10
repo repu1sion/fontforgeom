@@ -2033,7 +2033,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
     DStemInfo *dstem;
     MinimumDistance *md;
     char *blues, *others;
-    struct psdict *private = cv->b.sc->parent->private;
+    struct psdict *private = cv->b.sc->parent->private_;
     char buf[20];
     int len, len2;
     SplinePoint *sp;
@@ -6839,7 +6839,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi,GEvent *UNUSED(e)) {
 	    mi->ti.disabled = fvs==NULL || cv->b.container!=NULL;
 	  break;
 	  case MID_Revert:
-	    mi->ti.disabled = cv->b.fv->sf->origname==NULL || cv->b.fv->sf->new || cv->b.container;
+	    mi->ti.disabled = cv->b.fv->sf->origname==NULL || cv->b.fv->sf->new_ || cv->b.container;
 	  break;
 	  case MID_RevertGlyph:
 	    mi->ti.disabled = cv->b.fv->sf->filename==NULL ||
